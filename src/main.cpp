@@ -2,8 +2,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include "armordetection.h"
-#include "armor.h"
+#include "armorDetection.h"
+#include "Armor.h"
 
 using namespace cv;
 using namespace std;
