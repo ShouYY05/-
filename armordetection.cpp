@@ -6,62 +6,32 @@
 #include <vector>                      //向量
 #include <stdlib.h>
 #include "armordetection.h"
-
+#include "LightBar.h"
+#include "armor.h"
 
 ArmorDetection::ArmorDetection() = default;
 
-ArmorDetection::ArmorDetection(Mat & input) {
-	frame = input;
-}
+
+
 
 void ArmorDetection::setInputImage(Mat input)                  //导入当前图像
 {
 	frame = input;
-	currentCenter.x = 0;    //两矩形中心坐标
-	currentCenter.y = 0;
-	leftRect_up.x = 0;      //左侧矩形上方中点  
-	leftRect_up.y = 0;
-	leftRect_down.x = 0;    //左侧矩形下方中点  
-	leftRect_down.y = 0;
-	rightRect_up.x = 0;     //右侧矩形上方中点  
-	rightRect_up.y = 0;
-	rightRect_down.x = 0;   //右侧矩形下方中点  
-	rightRect_down.y = 0;
-
 }
 
-//图像预处理：把图像转换为HSV类型，再利用角点找出边缘，得到最小外接矩形，并画出边缘线和图像中心位置。
-void ArmorDetection::Pretreatment() {
+/**
+ * @brief 图像预处理：把图像转换为HSV类型，再利用角点找出边缘，得到最小外接矩形，
+ *        并画出边缘线和图像中心位置。将符合要求的矩形存储在lights里面
+ */
+void ArmorDetection::Pretreatment(vector<LightBar> lights) {
 	Mat input;
 	Point p, center;
 	vector<vector<Point>> contours;
 	vector<Vec4i> hireachy;
 	vector<Rect> boundRect(contours.size());
 	Point2f vertex[4];                                         //外接矩形的四个顶点
-
+	
 	imshow("src", frame);
-	/*
-	//创建进度条
-	createTrackbar("LowH", "Control", &iLowH, 255);
-	createTrackbar("HighH", "Control", &iHighH, 255);
-
-	createTrackbar("LowS", "Control", &iLowS, 255);
-	createTrackbar("HighS", "Control", &iHighS, 255);
-
-	createTrackbar("LowV", "Control", &iLowV, 255);
-	createTrackbar("HighV", "Control", &iHighV, 255);
-	cvtColor(frame, hsv, CV_BGR2HSV);
-	inRange(hsv,
-		Scalar(iLowH, iLowS, iLowV),
-		Scalar(iHighH, iHighS, iHighV),
-		mask);
-	// 形态学操作
-	morphologyEx(mask, mask, MORPH_OPEN, kernel1, Point(-1, -1));//开操作
-	dilate(mask, mask, kernel2, Point(-1, -1), 1);//膨胀
-	//轮廓增强
-	Canny(mask, mask, 3, 9, 3);
-	imshow("mask", mask);
-	*/
 
 	cvtColor(frame, hsv, CV_BGR2HSV);                         //把读取的src图像转为HSV图
 	vector<Mat> channels;                                     //分成三个频道
@@ -80,7 +50,6 @@ void ArmorDetection::Pretreatment() {
 				mask.at<uchar>(i, j) = 255;
 		}
 	}
-
 	imshow("二值边缘图", mask);
 	findContours(mask, contours, hireachy, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
@@ -89,7 +58,6 @@ void ArmorDetection::Pretreatment() {
 	{
 		RotatedRect minRect = minAreaRect(Mat(contours[i]));  //最小外接矩形
 
-		minRect.points(vertex);                               //外接矩形的四个顶点
 		if (minRect.size.width > minRect.size.height)         //交换矩形的宽和高，使得宽＜高
 		{
 			minRect.angle += 90;
@@ -97,117 +65,80 @@ void ArmorDetection::Pretreatment() {
 			minRect.size.width = minRect.size.height;
 			minRect.size.height = t;
 		}
+		
 
-        //初步筛选满足条件的矩形,并储存到minRects中
+        //初步筛选满足条件的矩形,并储存到lights中
 		if ((minRect.size.width * 9 > minRect.size.height)       //矩形宽比高
 			&& (minRect.size.width * 1 < minRect.size.height)
 			&& (minRect.size.width * minRect.size.height < 160) && (minRect.size.width* minRect.size.height > 20) //矩形面积>20, <160
 			&& (abs(minRect.angle) < 30) )                        //矩形偏离角
 		{
-			minRects.push_back(minRect);
-		}
+			minRect.points(vertex);                               //外接矩形的四个顶点
+			LightBar light = LightBar(minRect, contourArea(contours[i]));
+			light.rect = minRect;
+			lights.push_back(light);
 
-        /*//用线圈出识别的最小矩形（蓝色区域） 所画图像，起点，终点，颜色，线宽
-		for (int l = 0; l < 4; l++)
-		{
-			line(frame, vertex[l], vertex[(l + 1) % 4], Scalar(255, 255, 255), 2);   
-		}
-		//画出图像中心十字
-		line(frame, Point(frame.cols / 2 - 15, frame.rows / 2),
-			Point(frame.cols / 2 + 15, frame.rows / 2), Scalar(0, 255, 255), 5);
-		line(frame, Point(frame.cols / 2, frame.rows / 2 - 15),
-			Point(frame.cols / 2, frame.rows / 2 + 15), Scalar(0, 255, 255), 5);
-		circle(frame, Point(frame.cols / 2, frame.rows / 2), 4, Scalar(0, 0, 255), -1);
-		*/
+			for (int l = 0; l < 4; l++)
+			{
+				line(frame, vertex[l], vertex[(l + 1) % 4], Scalar(255, 255, 255), 2);   
+			}
+		}  
 	}
 }
 
 
-Point2f ArmorDetection::GetArmorCenter() {
+
+void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors) 
+{
 	//遍历所有矩形，两两组合
-	RotatedRect leftRect, rightRect;  //左右两个矩形
+	
+	//左右两个灯棒
+	LightBar leftRect, rightRect;  
 	vector<int*> reliability;
 	double area[2], distance, height;
 	
-
-	if (minRects.size() < 2)          //只找到一个矩形或者没有矩形
+	//遍历所有矩形，两两组合
+	for (int i = 0; i < lights.size(); ++i)
 	{
-		LostTarget();
-		return currentCenter;
-	}
-
-	for (int i = 0; i < minRects.size(); ++i) 
-	{
-		for (int j = i + 1; j < minRects.size(); ++j) 
+		cout << "start";
+		for (int j = i + 1; j < lights.size(); ++j)
 		{
-			int num = 1;    //同一张图上的不同中心点
+			int num = 0;    //同一张图上的不同装甲板
 			int level = 0;
 			int temp[3];
-			leftRect = minRects[i];        //遍历所有矩形，两两组合
-			rightRect = minRects[j];
-			//判断两个矩形的图形大小
-			area[0] = leftRect.size.width * leftRect.size.height;
-			area[1] = rightRect.size.width * rightRect.size.height;
-			double half_height = (leftRect.size.height + rightRect.size.height) / 4;  //定义半高（衡量矩形y坐标的偏离程度）
+			leftRect = lights[i];
+			leftRect = lights[j];
+			double half_height = (leftRect.height + rightRect.height) / 4;  //定义半高（衡量矩形y坐标的偏离程度）height 
 			//判断两个矩形中心点的距离
 			distance = Distance(leftRect.center, rightRect.center);
-			height = (leftRect.size.height + rightRect.size.height) / 2;      //两矩形的平均高度
+			height = (leftRect.height + rightRect.height) / 2;      //两矩形的平均高度 > ma
+			
 
-			if (abs(leftRect.angle - rightRect.angle) < 30 && min(area[0], area[1]) * 4 > max(area[0], area[1])
-				&& abs(leftRect.center.y - rightRect.center.y) < 1 * half_height && distance < 6 * height && distance > 1.5*height)
+			if (abs(leftRect.angle - rightRect.angle) < 30 && min(leftRect.area, rightRect.area) * 2 > max(leftRect.area, rightRect.area)
+				&& abs(leftRect.height - rightRect.height) < 2 * half_height && distance < 6 * height && distance > 1.5*height)
 			{
-				//得到装甲板中心点的坐标
-				currentCenter.x = (minRects[i].center.x + minRects[j].center.x) / 2;
-				currentCenter.y = (minRects[i].center.y + minRects[j].center.y) / 2;
-				//得到矩形上下边的中点
-				leftRect_up.x = minRects[i].center.x;      //左侧矩形上方中点  
-				leftRect_up.y = minRects[i].center.y - (minRects[i].size.height) / 2;
-				leftRect_down.x = minRects[i].center.x;    //左侧矩形下方中点  
-				leftRect_down.y = minRects[i].center.y + (minRects[i].size.height) / 2;
-
-				rightRect_up.x = minRects[j].center.x;     //右侧矩形上方中点  
-				rightRect_up.y = minRects[j].center.y - (minRects[j].size.height) / 2;
-				rightRect_down.x = minRects[j].center.x;   //右侧矩形下方中点  
-				rightRect_down.y = minRects[j].center.y + (minRects[j].size.height) / 2;
-				//得到矩形面积
-				armor_area = distance * height;
-				//得到矩形角度
-				armor_angle = (leftRect.angle + rightRect.angle) / 2;
-
-				cout << "[Point" << num << "] x = " << currentCenter.x - frame.cols / 2 << "    y = " << currentCenter.y - frame.rows / 2 
-					<< "    armor_area = " << armor_area << "    armor_angle = " << armor_angle << endl;
-				num++;
+				armors.push_back(Armor(leftRect, leftRect));
+				
+				cout << "[Point" << num << "] x = " << armors[num].currentCenter.x << "    y = " << armors[num].currentCenter.y
+					<< "    armor_area = " << armors[num].armor_area << "    armor_angle = " << armors[num].armor_angle << endl;
 
 				//画出装甲板的中心
-				circle(frame, currentCenter, 2, Scalar(0, 0, 255), 3);
+				circle(frame, armors[num].currentCenter, 2, Scalar(0, 0, 255), 3);   //红
 				//画出两侧灯光的中心和连线
-				circle(frame, leftRect_up, 2, Scalar(0, 255, 0), 2);
-				circle(frame, leftRect_down, 2, Scalar(0, 255, 0), 2);
-				circle(frame, rightRect_up, 2, Scalar(0, 255, 0), 2);
-				circle(frame, rightRect_down, 2, Scalar(0, 255, 0), 2);
-				line(frame, leftRect_up, currentCenter, Scalar(255, 255, 255), 1);
-				line(frame, leftRect_down, currentCenter, Scalar(255, 255, 255), 1);
-				line(frame, rightRect_up, currentCenter, Scalar(255, 255, 255), 1);
-				line(frame, rightRect_down, currentCenter, Scalar(255, 255, 255), 1);
+				circle(frame, armors[num].leftRect_up, 2, Scalar(0, 255, 0), 2);     //绿
+				circle(frame, armors[num].leftRect_down, 2, Scalar(255, 255, 0), 2); //青
+				circle(frame, armors[num].rightRect_up, 2, Scalar(0, 255, 255), 2);  //黄
+				circle(frame, armors[num].rightRect_down, 2, Scalar(255, 0, 0), 2);  //蓝
+				line(frame, armors[num].leftRect_up, currentCenter, Scalar(255, 255, 255), 1);
+				line(frame, armors[num].leftRect_down, currentCenter, Scalar(255, 255, 255), 1);
+				line(frame, armors[num].rightRect_up, currentCenter, Scalar(255, 255, 255), 1);
+				line(frame, armors[num].rightRect_down, currentCenter, Scalar(255, 255, 255), 1);
 				
-                //与上一次的结果对比
-				if (lastCenter.x == 0 && lastCenter.y == 0)
-				{
-					lastCenter = currentCenter;
-					lost = 0;
-				}
-				else
-				{
-					double difference = Distance(currentCenter, lastCenter);  //寻找两个图像的中点距离，如果过大，则进入LostTarget() 函数
-					if (difference > 300) {
-						LostTarget();
-						return currentCenter;
-					}
-				}
-
-
+                num++;
 			}
-			else continue;
+			else cout << "end" << endl;
+				continue;
+
 			
     
 /*
@@ -276,11 +207,11 @@ Point2f ArmorDetection::GetArmorCenter() {
 			reliability.push_back(temp);
             */
 		}	
-		
-	}
+}
     imshow("frame（识别装甲板）", frame);
-	minRects.clear();                        //清除储存的数据!!!!
-    return currentCenter;
+
+	lights.clear();                        //清除储存的数据!!!!
+	armors.clear();
 
 	/*
 	if (reliability.empty()) 

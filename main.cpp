@@ -3,11 +3,12 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include "armordetection.h"
+#include "armor.h"
 
 using namespace cv;
 using namespace std;
 
-ArmorDetection* armor = new ArmorDetection();
+ArmorDetection* armordetection = new ArmorDetection();
 Point2f center;
 
 int main()
@@ -19,7 +20,7 @@ int main()
 	char string2[10];
 	Mat frame;
 
-VideoCapture capture("装甲板.mp4");         //导入视频
+VideoCapture capture("装甲板1.mp4");         //导入视频
 	if (!capture.isOpened())                //报错
 	{
 		printf("无法打开相机...\n");
@@ -33,9 +34,11 @@ VideoCapture capture("装甲板.mp4");         //导入视频
 
 	while (capture.read(frame))           //读取当前帧
 	{
-		armor->setInputImage(frame);      //导入当前图像
-		armor->Pretreatment();            //图像预处理
-		center = armor->GetArmorCenter();
+		vector<LightBar> lights;                                  //存储灯棒数据
+		vector<Armor> armors;
+		armordetection->setInputImage(frame);      //导入当前图像
+		armordetection->Pretreatment(lights);            //图像预处理
+		armordetection->GetArmor(lights, armors);
 
 		//cout << "[INFO] x = " << center.x - frame.cols / 2 << "    y = " << center.y - frame.rows / 2 << endl;
 
@@ -49,7 +52,7 @@ VideoCapture capture("装甲板.mp4");         //导入视频
 		fpsString += string;
 		putText(frame, fpsString, Point(5, 20), FONT_HERSHEY_SIMPLEX, 0.7, Scalar(0, 255, 255));
 
-		if (waitKey(1) > 0) break;
+		if (waitKey(30) == 27) break;
 	}
 	capture.release();//释放视频内存
 	waitKey(1500);

@@ -1,41 +1,35 @@
+#pragma once
+#ifndef ARMOR_DETECTION_H
+#define ARMOR_DETECTION_H
+
+#include <iostream>
+#include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/opencv.hpp>
-#include <iostream>
+#include "LightBar.h"
+#include "armor.h"
 
-#pragma once
-#ifndef ARMORDETECTION_H
-#define ARMORDETECTION_H
-
-#include <iostream>
-#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace cv;
 
 class ArmorDetection {
-private:
+public:
 	Mat frame, hsv, mask;
 	Mat kernel1 = getStructuringElement(MORPH_RECT, Size(3, 3), Point(-1, -1));
 	Mat kernel2 = getStructuringElement(MORPH_RECT, Size(5, 5), Point(-1, -1));
 	Point2f currentCenter;    //中心坐标
 	Point2f lastCenter;
-	float armor_area;         //面积
-	float armor_angle;        //角度
-	Point2f leftRect_up;
-	Point2f rightRect_up;
-	Point2f leftRect_down;
-	Point2f rightRect_down;
-
-	vector<RotatedRect> minRects;
+	
 	int lost = 0;
 
-public:
+
 	ArmorDetection();
-	explicit ArmorDetection(Mat& input);
+	ArmorDetection(LightBar& left_light_bar, LightBar& right_light_bar);
+
 	void setInputImage(Mat input);
-	void Pretreatment();
-	Point2f GetArmorCenter();
+	void Pretreatment(vector<LightBar> lights);
+	void GetArmor(vector<LightBar> lights, vector<Armor> armor);
 
 	int iLowH = 78;
 	int iHighH = 255;
