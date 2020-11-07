@@ -2,8 +2,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include <opencv2/imgproc/types_c.h>   //É«²Ê¿Õ¼ä×ª»»
-#include <vector>                      //ÏòÁ¿
+#include <opencv2/imgproc/types_c.h>   //è‰²å½©ç©ºé—´è½¬æ¢
+#include <vector>                      //å‘é‡
 #include <stdlib.h>
 #include "armordetection.h"
 #include "LightBar.h"
@@ -13,15 +13,15 @@ ArmorDetection::ArmorDetection() = default;
 
 
 
-
-void ArmorDetection::setInputImage(Mat input)                  //µ¼Èëµ±Ç°Í¼Ïñ
+//å¯¼å…¥å½“å‰å›¾åƒ
+void ArmorDetection::setInputImage(Mat input)                  
 {
 	frame = input;
 }
 
 /**
- * @brief Í¼ÏñÔ¤´¦Àí£º°ÑÍ¼Ïñ×ª»»ÎªHSVÀàĞÍ£¬ÔÙÀûÓÃ½ÇµãÕÒ³ö±ßÔµ£¬µÃµ½×îĞ¡Íâ½Ó¾ØĞÎ£¬
- *        ²¢»­³ö±ßÔµÏßºÍÍ¼ÏñÖĞĞÄÎ»ÖÃ¡£½«·ûºÏÒªÇóµÄ¾ØĞÎ´æ´¢ÔÚlightsÀïÃæ
+ * @brief å›¾åƒé¢„å¤„ç†ï¼šæŠŠå›¾åƒè½¬æ¢ä¸ºHSVç±»å‹ï¼Œå†åˆ©ç”¨è§’ç‚¹æ‰¾å‡ºè¾¹ç¼˜ï¼Œå¾—åˆ°æœ€å°å¤–æ¥çŸ©å½¢ï¼Œ
+ *        å¹¶ç”»å‡ºè¾¹ç¼˜çº¿å’Œå›¾åƒä¸­å¿ƒä½ç½®ã€‚å°†ç¬¦åˆè¦æ±‚çš„çŸ©å½¢å­˜å‚¨åœ¨lightsé‡Œé¢
  */
 void ArmorDetection::Pretreatment(vector<LightBar> lights) {
 	Mat input;
@@ -29,36 +29,36 @@ void ArmorDetection::Pretreatment(vector<LightBar> lights) {
 	vector<vector<Point>> contours;
 	vector<Vec4i> hireachy;
 	vector<Rect> boundRect(contours.size());
-	Point2f vertex[4];                                         //Íâ½Ó¾ØĞÎµÄËÄ¸ö¶¥µã
+	Point2f vertex[4];       //å¤–æ¥çŸ©å½¢çš„å››ä¸ªé¡¶ç‚¹
 	
 	imshow("src", frame);
 
-	cvtColor(frame, hsv, CV_BGR2HSV);                         //°Ñ¶ÁÈ¡µÄsrcÍ¼Ïñ×ªÎªHSVÍ¼
-	vector<Mat> channels;                                     //·Ö³ÉÈı¸öÆµµÀ
+	cvtColor(frame, hsv, CV_BGR2HSV);                      
+	vector<Mat> channels;                                 
 	split(frame, channels);
 	Mat hue = channels.at(0);
 	Mat value = channels.at(2);
-	Mat mask(hue.rows, hue.cols, CV_8UC1, Scalar(0, 0, 0));   //½¨Á¢´¿ºÚÍ¼Ïñ»­°å
+	Mat mask(hue.rows, hue.cols, CV_8UC1, Scalar(0, 0, 0));  
 
 	for (int i = 0; i < hue.rows; i++)
 	{
 		for (int j = 0; j < hue.cols; j++)
 		{
-			int h = hue.at<uchar>(i, j);                      //¸ÃµãH¡¢VµÄÖµ
+			int h = hue.at<uchar>(i, j);                  
 			int v = value.at<uchar>(i, j);
-			if (h > 78 && v < 50)                             //É¸Ñ¡À¶É«ÇøÓòÎª°×É«Öµ
+			if (h > 78 && v < 50)                //ç­›é€‰è“è‰²åŒºåŸŸä¸ºç™½è‰²å€¼
 				mask.at<uchar>(i, j) = 255;
 		}
 	}
-	imshow("¶şÖµ±ßÔµÍ¼", mask);
+	imshow("äºŒå€¼è¾¹ç¼˜å›¾", mask);
 	findContours(mask, contours, hireachy, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
-	//É¸Ñ¡£¬È¥³ıÒ»²¿·Ö¾ØĞÎ
+	//ç­›é€‰ï¼Œå»é™¤ä¸€éƒ¨åˆ†çŸ©å½¢
 	for (int i = 0; i < contours.size(); ++i) 
 	{
-		RotatedRect minRect = minAreaRect(Mat(contours[i]));  //×îĞ¡Íâ½Ó¾ØĞÎ
+		RotatedRect minRect = minAreaRect(Mat(contours[i]));  //æœ€å°å¤–æ¥çŸ©å½¢
 
-		if (minRect.size.width > minRect.size.height)         //½»»»¾ØĞÎµÄ¿íºÍ¸ß£¬Ê¹µÃ¿í£¼¸ß
+		if (minRect.size.width > minRect.size.height)         //äº¤æ¢çŸ©å½¢çš„å®½å’Œé«˜ï¼Œä½¿å¾—å®½ï¼œé«˜
 		{
 			minRect.angle += 90;
 			float t = minRect.size.width;
@@ -67,13 +67,13 @@ void ArmorDetection::Pretreatment(vector<LightBar> lights) {
 		}
 		
 
-        //³õ²½É¸Ñ¡Âú×ãÌõ¼şµÄ¾ØĞÎ,²¢´¢´æµ½lightsÖĞ
-		if ((minRect.size.width * 9 > minRect.size.height)       //¾ØĞÎ¿í±È¸ß
+        //åˆæ­¥ç­›é€‰æ»¡è¶³æ¡ä»¶çš„çŸ©å½¢,å¹¶å‚¨å­˜åˆ°lightsä¸­
+		if ((minRect.size.width * 9 > minRect.size.height)       //çŸ©å½¢å®½æ¯”é«˜
 			&& (minRect.size.width * 1 < minRect.size.height)
-			&& (minRect.size.width * minRect.size.height < 160) && (minRect.size.width* minRect.size.height > 20) //¾ØĞÎÃæ»ı>20, <160
-			&& (abs(minRect.angle) < 30) )                        //¾ØĞÎÆ«Àë½Ç
+			&& (minRect.size.width * minRect.size.height < 160) && (minRect.size.width* minRect.size.height > 20) //çŸ©å½¢é¢ç§¯>20, <160
+			&& (abs(minRect.angle) < 30) )                        //çŸ©å½¢åç¦»è§’
 		{
-			minRect.points(vertex);                               //Íâ½Ó¾ØĞÎµÄËÄ¸ö¶¥µã
+			minRect.points(vertex);                               //å¤–æ¥çŸ©å½¢çš„å››ä¸ªé¡¶ç‚¹
 			LightBar light = LightBar(minRect, contourArea(contours[i]));
 			light.rect = minRect;
 			lights.push_back(light);
@@ -88,30 +88,34 @@ void ArmorDetection::Pretreatment(vector<LightBar> lights) {
 
 
 
+/**
+ * @brief éå†åŒ¹é…çŸ©å½¢ï¼Œå­˜åˆ°armorä¸­ï¼Œå¹¶åœ¨å›¾åƒä¸Šç”»å‡ºæ ‡è®°ç‚¹
+ * @param å…‰æ¡ç±»ç»„æˆçš„å‘é‡ï¼Œè£…ç”²æ¿ç±»ç»„æˆçš„å‘é‡
+ */
 void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors) 
 {
-	//±éÀúËùÓĞ¾ØĞÎ£¬Á½Á½×éºÏ
+	//éå†æ‰€æœ‰çŸ©å½¢ï¼Œä¸¤ä¸¤ç»„åˆ
 	
-	//×óÓÒÁ½¸öµÆ°ô
+	//å·¦å³ä¸¤ä¸ªç¯æ£’
 	LightBar leftRect, rightRect;  
 	vector<int*> reliability;
 	double area[2], distance, height;
 	
-	//±éÀúËùÓĞ¾ØĞÎ£¬Á½Á½×éºÏ
+	//éå†æ‰€æœ‰çŸ©å½¢ï¼Œä¸¤ä¸¤ç»„åˆ
 	for (int i = 0; i < lights.size(); ++i)
 	{
 		cout << "start";
 		for (int j = i + 1; j < lights.size(); ++j)
 		{
-			int num = 0;    //Í¬Ò»ÕÅÍ¼ÉÏµÄ²»Í¬×°¼×°å
+			int num = 0;    //åŒä¸€å¼ å›¾ä¸Šçš„ä¸åŒè£…ç”²æ¿
 			int level = 0;
 			int temp[3];
 			leftRect = lights[i];
 			leftRect = lights[j];
-			double half_height = (leftRect.height + rightRect.height) / 4;  //¶¨Òå°ë¸ß£¨ºâÁ¿¾ØĞÎy×ø±êµÄÆ«Àë³Ì¶È£©height 
-			//ÅĞ¶ÏÁ½¸ö¾ØĞÎÖĞĞÄµãµÄ¾àÀë
+			double half_height = (leftRect.height + rightRect.height) / 4;  //å®šä¹‰åŠé«˜ï¼ˆè¡¡é‡çŸ©å½¢yåæ ‡çš„åç¦»ç¨‹åº¦ï¼‰height 
+			//åˆ¤æ–­ä¸¤ä¸ªçŸ©å½¢ä¸­å¿ƒç‚¹çš„è·ç¦»
 			distance = Distance(leftRect.center, rightRect.center);
-			height = (leftRect.height + rightRect.height) / 2;      //Á½¾ØĞÎµÄÆ½¾ù¸ß¶È > ma
+			height = (leftRect.height + rightRect.height) / 2;      //ä¸¤çŸ©å½¢çš„å¹³å‡é«˜åº¦ > ma
 			
 
 			if (abs(leftRect.angle - rightRect.angle) < 30 && min(leftRect.area, rightRect.area) * 2 > max(leftRect.area, rightRect.area)
@@ -122,13 +126,13 @@ void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors)
 				cout << "[Point" << num << "] x = " << armors[num].currentCenter.x << "    y = " << armors[num].currentCenter.y
 					<< "    armor_area = " << armors[num].armor_area << "    armor_angle = " << armors[num].armor_angle << endl;
 
-				//»­³ö×°¼×°åµÄÖĞĞÄ
-				circle(frame, armors[num].currentCenter, 2, Scalar(0, 0, 255), 3);   //ºì
-				//»­³öÁ½²àµÆ¹âµÄÖĞĞÄºÍÁ¬Ïß
-				circle(frame, armors[num].leftRect_up, 2, Scalar(0, 255, 0), 2);     //ÂÌ
-				circle(frame, armors[num].leftRect_down, 2, Scalar(255, 255, 0), 2); //Çà
-				circle(frame, armors[num].rightRect_up, 2, Scalar(0, 255, 255), 2);  //»Æ
-				circle(frame, armors[num].rightRect_down, 2, Scalar(255, 0, 0), 2);  //À¶
+				//ç”»å‡ºè£…ç”²æ¿çš„ä¸­å¿ƒ
+				circle(frame, armors[num].currentCenter, 2, Scalar(0, 0, 255), 3);   //çº¢
+				//ç”»å‡ºä¸¤ä¾§ç¯å…‰çš„ä¸­å¿ƒå’Œè¿çº¿
+				circle(frame, armors[num].leftRect_up, 2, Scalar(0, 255, 0), 2);     //ç»¿
+				circle(frame, armors[num].leftRect_down, 2, Scalar(255, 255, 0), 2); //é’
+				circle(frame, armors[num].rightRect_up, 2, Scalar(0, 255, 255), 2);  //é»„
+				circle(frame, armors[num].rightRect_down, 2, Scalar(255, 0, 0), 2);  //è“
 				line(frame, armors[num].leftRect_up, currentCenter, Scalar(255, 255, 255), 1);
 				line(frame, armors[num].leftRect_down, currentCenter, Scalar(255, 255, 255), 1);
 				line(frame, armors[num].rightRect_up, currentCenter, Scalar(255, 255, 255), 1);
@@ -142,7 +146,7 @@ void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors)
 			
     
 /*
-			//ÅĞ¶ÏÁ½¸ö¾ØĞÎµÄ½Ç¶È²îÖµ£¬²¢½«²»Í¬Öµ¸³Öµ¸ølevel
+			//åˆ¤æ–­ä¸¤ä¸ªçŸ©å½¢çš„è§’åº¦å·®å€¼ï¼Œå¹¶å°†ä¸åŒå€¼èµ‹å€¼ç»™level
 			if (leftRect.angle == rightRect.angle) 
 			{ level += 10;}
 			else if (abs(leftRect.angle - rightRect.angle) < 5) 
@@ -155,7 +159,7 @@ void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors)
 			{ level += 1;}
 			else break;
 
-			//ÅĞ¶ÏÁ½¸ö¾ØĞÎµÄÍ¼ĞÎ´óĞ¡
+			//åˆ¤æ–­ä¸¤ä¸ªçŸ©å½¢çš„å›¾å½¢å¤§å°
 			area[0] = leftRect.size.width * leftRect.size.height;
 			area[1] = rightRect.size.width * rightRect.size.height;
 			if (area[0] == area[1]) 
@@ -170,8 +174,8 @@ void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors)
 			{ level += 1;}
 			else break;
 
-			//ÅĞ¶ÏÁ½¸ö¾ØĞÎÖĞĞÄµÄË®Æ½Î»ÖÃ£¨y×ø±ê£©
-			double half_height = (leftRect.size.height + rightRect.size.height) / 4;  //¶¨Òå°ë¸ß£¨ºâÁ¿¾ØĞÎy×ø±êµÄÆ«Àë³Ì¶È£©
+			//åˆ¤æ–­ä¸¤ä¸ªçŸ©å½¢ä¸­å¿ƒçš„æ°´å¹³ä½ç½®ï¼ˆyåæ ‡ï¼‰
+			double half_height = (leftRect.size.height + rightRect.size.height) / 4;  //å®šä¹‰åŠé«˜ï¼ˆè¡¡é‡çŸ©å½¢yåæ ‡çš„åç¦»ç¨‹åº¦ï¼‰
 			if (leftRect.center.y == rightRect.center.y) 
 			{ level += 10;}
 			else if (abs(leftRect.center.y - rightRect.center.y) < 0.2 * half_height) 
@@ -184,9 +188,9 @@ void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors)
 			{ level += 1;}
 			else break;
 
-			//ÅĞ¶ÏÁ½¸ö¾ØĞÎÖĞĞÄµãµÄ¾àÀë
+			//åˆ¤æ–­ä¸¤ä¸ªçŸ©å½¢ä¸­å¿ƒç‚¹çš„è·ç¦»
 			distance = Distance(leftRect.center, rightRect.center);
-			height = (leftRect.size.height + rightRect.size.height) / 2;      //Á½¾ØĞÎµÄÆ½¾ù¸ß¶È
+			height = (leftRect.size.height + rightRect.size.height) / 2;      //ä¸¤çŸ©å½¢çš„å¹³å‡é«˜åº¦
 			if (distance != 0 && distance > height) {
 				if (distance < 1.5 * height) 
 				{ level += 6;}
@@ -199,7 +203,7 @@ void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors)
 				else break;
 			}
 
-			//µÃµ½¸ÃÖÖ×éºÏÏÂµÄ·ûºÏ³Ì¶È£¨levelÖµÔ½´óÔ½·ûºÏ£©
+			//å¾—åˆ°è¯¥ç§ç»„åˆä¸‹çš„ç¬¦åˆç¨‹åº¦ï¼ˆlevelå€¼è¶Šå¤§è¶Šç¬¦åˆï¼‰
 			temp[0] = i;
 			temp[1] = j;
 			temp[2] = level;
@@ -208,79 +212,17 @@ void ArmorDetection::GetArmor(vector<LightBar> lights, vector<Armor> armors)
             */
 		}	
 }
-    imshow("frame£¨Ê¶±ğ×°¼×°å£©", frame);
+    imshow("frameï¼ˆè¯†åˆ«è£…ç”²æ¿ï¼‰", frame);
 
-	lights.clear();                        //Çå³ı´¢´æµÄÊı¾İ!!!!
+	lights.clear();                        //æ¸…é™¤å‚¨å­˜çš„æ•°æ®!!!!
 	armors.clear();
 
-	/*
-	if (reliability.empty()) 
-	{
-		LostTarget();
-		return currentCenter;
-	}
-	else 
-	{
-		int maxLevel = 0, index = 0;
-		for (int k = 0; k < reliability.size(); ++k)    //Í¨¹ı±éÀúËùÓĞÇé¿ö£¬È¡µÃ×î´ólevelºÍ¶ÔÓ¦µÄ×éºÏÊı£¬ÕÒµ½×î·ûºÏµÄÁ½¸ö¾ØĞÎ
-		{
-			if (reliability[k][2] > maxLevel) 
-			{
-				maxLevel = reliability[k][2];
-				index = k;
-			}
-		}
-
-		//µÃµ½×°¼×°åÖĞĞÄµãµÄ×ø±ê
-		currentCenter.x = (minRects[reliability[index][0]].center.x + minRects[reliability[index][1]].center.x) / 2;
-		currentCenter.y = (minRects[reliability[index][0]].center.y + minRects[reliability[index][1]].center.y) / 2;
-
-		//µÃµ½¾ØĞÎÉÏÏÂ±ßµÄÖĞµã
-		leftRect_up.x = minRects[reliability[index][0]].center.x;      //×ó²à¾ØĞÎÉÏ·½ÖĞµã  
-		leftRect_up.y = minRects[reliability[index][0]].center.y - (minRects[reliability[index][0]].size.height)/2;
-		leftRect_down.x = minRects[reliability[index][0]].center.x;    //×ó²à¾ØĞÎÏÂ·½ÖĞµã  
-		leftRect_down.y = minRects[reliability[index][0]].center.y + (minRects[reliability[index][0]].size.height) / 2;
-
-		rightRect_up.x = minRects[reliability[index][1]].center.x;     //ÓÒ²à¾ØĞÎÉÏ·½ÖĞµã  
-		rightRect_up.y = minRects[reliability[index][1]].center.y - (minRects[reliability[index][1]].size.height) / 2;
-		rightRect_down.x = minRects[reliability[index][1]].center.x;   //ÓÒ²à¾ØĞÎÏÂ·½ÖĞµã  
-		rightRect_down.y = minRects[reliability[index][1]].center.y + (minRects[reliability[index][1]].size.height) / 2;
-
-		//ÓëÉÏÒ»´ÎµÄ½á¹û¶Ô±È
-		if (lastCenter.x == 0 && lastCenter.y == 0) 
-		{
-			lastCenter = currentCenter;
-			lost = 0;
-		}
-		else 
-		{
-			double difference = Distance(currentCenter, lastCenter);  //Ñ°ÕÒÁ½¸öÍ¼ÏñµÄÖĞµã¾àÀë£¬Èç¹û¹ı´ó£¬Ôò½øÈëLostTarget() º¯Êı
-			if (difference > 300) {
-				LostTarget();
-				return currentCenter;
-			}
-		}
-
-		//»­³ö×°¼×°åµÄÖĞĞÄ
-		circle(frame, currentCenter, 2, Scalar(0, 0, 255), 3);
-		//»­³öÁ½²àµÆ¹âµÄÖĞĞÄºÍÁ¬Ïß
-		circle(frame, leftRect_up, 2, Scalar(0, 255, 0), 2);
-		circle(frame, leftRect_down, 2, Scalar(0, 255, 0), 2);
-		circle(frame, rightRect_up, 2, Scalar(0, 255, 0), 2);
-		circle(frame, rightRect_down, 2, Scalar(0, 255, 0), 2);
-		line(frame, leftRect_up, currentCenter, Scalar(255, 255, 255), 2);
-		line(frame, leftRect_down, currentCenter, Scalar(255, 255, 255), 2);
-		line(frame, rightRect_up, currentCenter, Scalar(255, 255, 255), 2);
-		line(frame, rightRect_down, currentCenter, Scalar(255, 255, 255), 2);
-
-
-		imshow("frame£¨Ê¶±ğ×°¼×°å£©", frame);
-		return currentCenter;
-	}
-    */
 }
 
-void ArmorDetection::LostTarget()             //Èç¹ûÍ¼ÏñÖĞÎªÊ¶±ğµ½ºÏÊÊµÄ¾ØĞÎ£¬ÄÇÃ´·µ»ØÉÏÒ»ÕÅÍ¼Ïñ×°¼×°åµÄÖĞĞÄµã¡£²î¾à¹ı´óÊ±ÖØÖÃÎª0
+/**
+ * @brief å¦‚æœå›¾åƒä¸­ä¸ºè¯†åˆ«åˆ°åˆé€‚çš„çŸ©å½¢ï¼Œé‚£ä¹ˆè¿”å›ä¸Šä¸€å¼ å›¾åƒè£…ç”²æ¿çš„ä¸­å¿ƒç‚¹ã€‚å·®è·è¿‡å¤§æ—¶é‡ç½®ä¸º0
+ */
+void ArmorDetection::LostTarget()         
 {
 	
 	lost++;
@@ -296,17 +238,80 @@ void ArmorDetection::LostTarget()             //Èç¹ûÍ¼ÏñÖĞÎªÊ¶±ğµ½ºÏÊÊµÄ¾ØĞÎ£¬ÄÇ
 	lastCenter = Point2f(0, 0);*/
 }
 
-double ArmorDetection::Distance(Point2f a, Point2f b)     //¼ÆËãa, bÁ½µãµÄ¾àÀë
+//è®¡ç®—a, bä¸¤ç‚¹çš„è·ç¦»
+double ArmorDetection::Distance(Point2f a, Point2f b)     
 {
 	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
 
-double ArmorDetection::max(double first, double second)   //±È½ÏÁ½¸öÊıµÄ´óĞ¡£¬·µ»Ø½Ï´óÖµ
+//æ¯”è¾ƒä¸¤ä¸ªæ•°çš„å¤§å°ï¼Œè¿”å›è¾ƒå¤§å€¼
+double ArmorDetection::max(double first, double second)   
 {
 	return first > second ? first : second;
 }
 
-double ArmorDetection::min(double first, double second)   //±È½ÏÁ½¸öÊıµÄ´óĞ¡£¬·µ»Ø½ÏĞ¡Öµ
+//æ¯”è¾ƒä¸¤ä¸ªæ•°çš„å¤§å°ï¼Œè¿”å›è¾ƒå°å€¼
+double ArmorDetection::min(double first, double second)   
 {
 	return first < second ? first : second;
+}
+
+//å°†ç›¸æœºåæ ‡ç³»äºŒç»´åæ ‡è½¬å˜ä¸ºä¸‰ç»´åæ ‡
+void transform(Armor armor)
+{
+	//è‡ªå·±å®šä¹‰ä¸–ç•Œåæ ‡ç³»åæ ‡   
+	vector<Point3d> objP;  
+	vector<Point2d> points;       //ç›¸æœºåæ ‡ç³»çš„äºŒç»´åæ ‡
+	double q[4];
+	Mat rotM, rotT,rvec,tvec;
+	
+	objP.clear();
+	objP.push_back(Point3f(0,0,0));            
+	objP.push_back(Point3f(0,26.5, 0));
+	objP.push_back(Point3f(67.5,26.5, 0));
+	objP.push_back(Point3f(67.5,0, 0));
+	
+	points.clear();
+	points.push_back(armor.leftRect_down);
+	points.push_back(armor.leftRect_up);
+	points.push_back(armor.rightRect_up);
+	points.push_back(armor.rightRect_down);
+	
+	//ä½¿ç”¨pnpè§£ç®—æ±‚å‡ºç›¸æœºåˆ°ä¸–ç•Œåæ ‡ç³»çš„æ—‹è½¬çŸ©é˜µå’Œå¹³ç§»çŸ©é˜µ       
+	solvePnP(objP, points, camera_matrix, distortion_coefficients, rvec, tvec);
+	//å°†æ—‹è½¬å‘é‡å˜æ¢æˆæ—‹è½¬çŸ©é˜µ
+	Rodrigues(rvec, rotM);  
+	
+	getQuaternion(rotM, q);
+
+
+}
+
+//è®¡ç®—å˜æ¢çŸ©é˜µ
+void getQuaternion(Mat R, double Q[])
+{
+	double trace = R.at<double>(0,0) + R.at<double>(1,1) + R.at<double>(2,2);
+	if (trace > 0.0) 
+	{
+		double s = sqrt(trace + 1.0);
+		Q[3] = (s * 0.5);
+		s = 0.5 / s;
+		Q[0] = ((R.at<double>(2,1) - R.at<double>(1,2)) * s);
+		Q[1] = ((R.at<double>(0,2) - R.at<double>(2,0)) * s);
+		Q[2] = ((R.at<double>(1,0) - R.at<double>(0,1)) * s);
+	} 
+	else 
+	{
+		int i = R.at<double>(0,0) < R.at<double>(1,1) ? (R.at<double>(1,1) < R.at<double>(2,2) ? 2 : 1) : (R.at<double>(0,0) < R.at<double>(2,2) ? 2 : 0); 
+		int j = (i + 1) % 3; 
+		int k = (i + 2) % 3;
+		
+		double s = sqrt(R.at<double>(i, i) - R.at<double>(j,j) - R.at<double>(k,k) + 1.0);
+		Q[i] = s * 0.5;
+		s = 0.5 / s;
+
+		Q[3] = (R.at<double>(k,j) - R.at<double>(j,k)) * s;
+		Q[j] = (R.at<double>(j,i) + R.at<double>(i,j)) * s;
+		Q[k] = (R.at<double>(k,i) + R.at<double>(i,k)) * s;
+		}
 }
