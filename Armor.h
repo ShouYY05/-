@@ -13,13 +13,13 @@ class Armor
 {
 public:
 	Armor(LightBar& left_light, LightBar& right_light);
-	float armor_area;         //面积
-	float armor_angle;        //角度
-	float armor_height;        //高度
-	float armor_width;        //宽度
-	LightBar lights[2];             //两个灯棒组成一个装甲板
+	float armor_area;         //闈㈢Н
+	float armor_angle;        //瑙掑害
+	float armor_height;        //楂樺害
+	float armor_width;        //瀹藉害
+	LightBar lights[2];             //涓や釜鐏缁勬垚涓�涓鐢叉澘
 
-	//装甲板的四个顶点
+	//瑁呯敳鏉跨殑鍥涗釜椤剁偣
 	Point2f leftRect_up;
 	Point2f rightRect_up;
 	Point2f leftRect_down;
