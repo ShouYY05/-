@@ -7,7 +7,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "LightBar.h"
-#include "armor.h"
+#include "Armor.h"
 
 
 using namespace std;
@@ -30,7 +30,7 @@ public:
 	void setInputImage(Mat input);
 	void Pretreatment(vector<LightBar> lights);
 	void GetArmor(vector<LightBar> lights, vector<Armor> armor);
-	void transform();
+	void transform(Armor armor)
 	void getQuaternion(Mat R, double Q[]);
 	
 
