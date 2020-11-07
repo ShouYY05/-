@@ -11,24 +11,24 @@ Armor::Armor(LightBar& left_light_bar, LightBar& right_light_bar)
 {
 
 
-	//¶¨Òå×ó¡¢ÓÒµÆÌõµÄ4¸ö¶¥µã
+	//å®šä¹‰å·¦ã€å³ç¯æ¡çš„4ä¸ªé¡¶ç‚¹
 	Point2f left_light_vertices[4];
 	Point2f right_light_vertices[4];
 	left_light_bar.rect.points(left_light_vertices);
 	right_light_bar.rect.points(right_light_vertices);
 
-	//³õÊ¼»¯³ÉÔ±º¯Êý
+	//åˆå§‹åŒ–æˆå‘˜å‡½æ•°
 	this->lights[0] = left_light_bar;
 	this->lights[1] = right_light_bar;
 	this->armor_height = (left_light_bar.height + right_light_bar.height) / 2;
 	this->armor_width = abs(left_light_bar.center.x - right_light_bar.center.x) + left_light_bar.width;
 	this->armor_area = this->armor_height * this->armor_width;
 
-	//½«¹âÌõÖÐµÄ±ß½çµã´«¸ø×°¼×°åµÄËÄ¸ö¶¥µã
-	this->leftRect_down = left_light_vertices[0];     //×¢ÒâµãµÄË³Ðò
-	this->leftRect_up = left_light_vertices[1];       //*** 2 ÂÌ **** 3 »Æ ***
+	//å°†å…‰æ¡ä¸­çš„è¾¹ç•Œç‚¹ä¼ ç»™è£…ç”²æ¿çš„å››ä¸ªé¡¶ç‚¹
+	this->leftRect_down = left_light_vertices[0];     //æ³¨æ„ç‚¹çš„é¡ºåº
+	this->leftRect_up = left_light_vertices[1];       //*** 2 ç»¿ **** 3 é»„ ***
 	this->rightRect_up = right_light_vertices[2];     //**********************
-	this->rightRect_down = right_light_vertices[3];   //*** 1 Çà **** 4 À¶ ***
+	this->rightRect_down = right_light_vertices[3];   //*** 1 é’ **** 4 è“ ***
 	this->currentCenter.x = (left_light_vertices[0].x + left_light_vertices[1].x + left_light_vertices[2].x + left_light_vertices[3].x) / 4;
 	this->currentCenter.y = (left_light_vertices[0].y + left_light_vertices[1].y + left_light_vertices[2].y + left_light_vertices[3].y) / 4;
 }
