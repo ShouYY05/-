@@ -18,7 +18,7 @@ public:
 	Mat frame, hsv, mask;
 	Mat kernel1 = getStructuringElement(MORPH_RECT, Size(3, 3), Point(-1, -1));
 	Mat kernel2 = getStructuringElement(MORPH_RECT, Size(5, 5), Point(-1, -1));
-	Point2f currentCenter;    //ÖĞĞÄ×ø±ê
+	Point2f currentCenter;    //Ã–ÃÃÃ„Ã—Ã¸Â±Ãª
 	Point2f lastCenter;
 	
 	int lost = 0;
