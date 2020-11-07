@@ -13,17 +13,17 @@ Point2f center;
 
 int main()
 {
-	//fps±äÁ¿
+	//fpså˜é‡
 	double t = (double)getTickCount();
 	double fps;
 	char string[10];
 	char string2[10];
 	Mat frame;
 
-VideoCapture capture("×°¼×°å1.mp4");         //µ¼ÈëÊÓÆµ
-	if (!capture.isOpened())                //±¨´í
+VideoCapture capture("è£…ç”²æ¿1.mp4");        
+	if (!capture.isOpened())              
 	{
-		printf("ÎŞ·¨´ò¿ªÏà»ú...\n");
+		printf("æ— æ³•æ‰“å¼€ç›¸æœº...\n");
 		return -1;
 	}
 	
@@ -32,21 +32,21 @@ VideoCapture capture("×°¼×°å1.mp4");         //µ¼ÈëÊÓÆµ
 	//namedWindow("mask", 1);
 	//namedWindow("Control", 1);
 
-	while (capture.read(frame))           //¶ÁÈ¡µ±Ç°Ö¡
+	while (capture.read(frame))                        //è¯»å–å½“å‰å¸§
 	{
-		vector<LightBar> lights;                                  //´æ´¢µÆ°ôÊı¾İ
+		vector<LightBar> lights;                   //å­˜å‚¨ç¯æ£’æ•°æ®
 		vector<Armor> armors;
-		armordetection->setInputImage(frame);      //µ¼Èëµ±Ç°Í¼Ïñ
-		armordetection->Pretreatment(lights);            //Í¼ÏñÔ¤´¦Àí
+		armordetection->setInputImage(frame);      //å¯¼å…¥å½“å‰å›¾åƒ
+		armordetection->Pretreatment(lights);      //å›¾åƒé¢„å¤„ç†
 		armordetection->GetArmor(lights, armors);
 
 		//cout << "[INFO] x = " << center.x - frame.cols / 2 << "    y = " << center.y - frame.rows / 2 << endl;
 
-		//¼ÆËãfps
+		//è®¡ç®—fps
 		double dt = ((double)getTickCount() - t) / (double)getTickFrequency();
 		fps = 1.0 / dt;
 		t = (double)getTickCount();
-		cout << "fps=" << fps << endl;    //ÔÚ¿ØÖÆÌ¨ÉÏÊä³ö
+		cout << "fps=" << fps << endl;    //åœ¨æ§åˆ¶å°ä¸Šè¾“å‡º
 		sprintf_s(string, "%.2f", fps);
 		std::string fpsString("FPS:");
 		fpsString += string;
@@ -54,7 +54,7 @@ VideoCapture capture("×°¼×°å1.mp4");         //µ¼ÈëÊÓÆµ
 
 		if (waitKey(30) == 27) break;
 	}
-	capture.release();//ÊÍ·ÅÊÓÆµÄÚ´æ
+	capture.release();//é‡Šæ”¾è§†é¢‘å†…å­˜
 	waitKey(1500);
 	return 0;
 }
